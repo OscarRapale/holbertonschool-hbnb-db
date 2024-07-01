@@ -1,4 +1,7 @@
-flask
-flask-cors
-
+Flask
+Flask-Cors
+Flask-SQLAlchemy
+Flask-JWT-Extended
+Flask-Bcrypt
+python-dotenv
 gunicorn

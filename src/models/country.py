@@ -1,9 +1,9 @@
 """
 Country related functionality
 """
+from . import db
 
-
-class Country:
+class Country(db.Model):
     """
     Country representation
 
@@ -12,9 +12,12 @@ class Country:
     This class is used to get and list countries
     """
 
-    name: str
-    code: str
-    cities: list
+    __tablename__ = 'countries'
+
+    name = db.Column(db.String(128), nullable=False)
+    code = db.Column(db.String(2), primary_key=True, nullable=False)
+    cities = db.relationship("City", back_populates='country')
+
 
     def __init__(self, name: str, code: str, **kw) -> None:
         """Dummy init"""

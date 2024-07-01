@@ -4,11 +4,16 @@ Users controller module
 
 from flask import abort, request
 from src.models.user import User
-
+from sqlalchemy.exc import SQLAlchemyError
+from src.persistence import repo
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 def get_users():
     """Returns all users"""
-    users: list[User] = User.get_all()
+    try:
+        users = User.get_all()
+    except SQLAlchemyError as e:
+        abort(500, f"Database error: {e}")
 
     return [user.to_dict() for user in users]
 
@@ -17,12 +22,18 @@ def create_user():
     """Creates a new user"""
     data = request.get_json()
 
+    # Ensure the password is provided
+    if 'password' not in data:
+        abort(400, "Missing password field")
+
     try:
         user = User.create(data)
     except KeyError as e:
         abort(400, f"Missing field: {e}")
     except ValueError as e:
         abort(400, str(e))
+    except SQLAlchemyError as e:
+        abort(500, f"Database error: {e}")
 
     if user is None:
         abort(400, "User already exists")
@@ -30,9 +41,13 @@ def create_user():
     return user.to_dict(), 201
 
 
+@jwt_required()
 def get_user_by_id(user_id: str):
     """Returns a user by ID"""
-    user: User | None = User.get(user_id)
+    try:
+        user = User.get(user_id)
+    except SQLAlchemyError as e:
+        abort(500, f"Database error: {e}")
 
     if not user:
         abort(404, f"User with ID {user_id} not found")
@@ -40,6 +55,7 @@ def get_user_by_id(user_id: str):
     return user.to_dict(), 200
 
 
+@jwt_required()
 def update_user(user_id: str):
     """Updates a user by ID"""
     data = request.get_json()
@@ -48,6 +64,8 @@ def update_user(user_id: str):
         user = User.update(user_id, data)
     except ValueError as e:
         abort(400, str(e))
+    except SQLAlchemyError as e:
+        abort(500, f"Database error: {e}")
 
     if user is None:
         abort(404, f"User with ID {user_id} not found")
@@ -55,9 +73,13 @@ def update_user(user_id: str):
     return user.to_dict(), 200
 
 
+@jwt_required()
 def delete_user(user_id: str):
     """Deletes a user by ID"""
-    if not User.delete(user_id):
-        abort(404, f"User with ID {user_id} not found")
+    try:
+        if not User.delete(user_id):
+            abort(404, f"User with ID {user_id} not found")
+    except SQLAlchemyError as e:
+        abort(500, f"Database error: {e}")
 
     return "", 204

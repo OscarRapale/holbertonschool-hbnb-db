@@ -1,43 +1,75 @@
-"""
-  Now is easy to implement the database repository. The DBRepository
-  should implement the Repository (Storage) interface and the methods defined
-  in the abstract class Storage.
-
-  The methods to implement are:
-    - get_all
-    - get
-    - save
-    - update
-    - delete
-    - reload (which can be empty)
-"""
-
 from src.models.base import Base
+from src.models import db
 from src.persistence.repository import Repository
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import create_engine, Column, Integer, String, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 class DBRepository(Repository):
     """Dummy DB repository"""
 
     def __init__(self) -> None:
-        """Not implemented"""
+        self.__session = db.session
+        self.reload()
 
     def get_all(self, model_name: str) -> list:
-        """Not implemented"""
-        return []
+        try:
+            return self.__session.query(model_name).all()
+        except SQLAlchemyError:
+            self.__session.rollback()
+            return []
 
     def get(self, model_name: str, obj_id: str) -> Base | None:
-        """Not implemented"""
+        try:
+            return self.__session.query(model_name).get(obj_id)
+        except SQLAlchemyError:
+            self.__session.rollback()
+            return None
 
     def reload(self) -> None:
-        """Not implemented"""
+        self.__session = db.session
+        
 
     def save(self, obj: Base) -> None:
-        """Not implemented"""
+        try:
+            self.__session.add(obj)
+            self.__session.commit()
+        except SQLAlchemyError:
+            self.__session.rollback()
 
-    def update(self, obj: Base) -> Base | None:
-        """Not implemented"""
+    def update(self, obj: Base) -> None:
+        try:
+            self.__session.commit()
+        except SQLAlchemyError:
+            self.__session.rollback()
 
     def delete(self, obj: Base) -> bool:
-        """Not implemented"""
-        return False
+        try:
+            self.__session.delete(obj)
+            self.__session.commit()
+            return True
+        except SQLAlchemyError:
+            self.__session.rollback()
+            return False
+
+    def _get_model_class(self, model_name: str):
+        """Helper method to get the model class by name"""
+        from src.models.user import User
+        from src.models.place import Place
+        from src.models.review import Review
+        from src.models.amenity import Amenity
+        from src.models.city import City
+        from src.models.country import Country
+
+        models = {
+            "user": User,
+            "place": Place,
+            "review": Review,
+            "amenity": Amenity,
+            "city": City,
+            "country": Country,
+        }
+
+        return models[model_name.lower()]

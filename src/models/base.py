@@ -1,19 +1,27 @@
 """ Abstract base class for all models """
-
+from flask import app
 from datetime import datetime
 from typing import Any, Optional
 import uuid
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import Column, String, DateTime
+from sqlalchemy.orm import relationship
+from utils.constants import REPOSITORY_ENV_VAR
+import os 
 
-
-class Base(ABC):
+class Base(DeclarativeBase):
     """
     Base Interface for all models
     """
 
-    id: str
-    created_at: datetime
-    updated_at: datetime
+    # if os.getenv('REPOSITORY_ENV_VAR') == 'db':
+    #     __abstract__ = True
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 
     def __init__(
         self,
@@ -48,6 +56,9 @@ class Base(ABC):
         """
         from src.persistence import repo
 
+        if os.getenv(REPOSITORY_ENV_VAR) == 'db':
+            return repo.get(cls, id)
+
         return repo.get(cls.__name__.lower(), id)
 
     @classmethod
@@ -59,6 +70,9 @@ class Base(ABC):
         it should override this method
         """
         from src.persistence import repo
+
+        if os.getenv(REPOSITORY_ENV_VAR) == "db":
+            return repo.get_all(cls)
 
         return repo.get_all(cls.__name__.lower())
 
