@@ -1,6 +1,6 @@
 """ Abstract base class for all models """
 from flask import app
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 import uuid
 from abc import abstractmethod
@@ -19,8 +19,8 @@ class Base(DeclarativeBase):
     #     __abstract__ = True
 
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
 
 
     def __init__(
@@ -42,8 +42,8 @@ class Base(DeclarativeBase):
                 setattr(self, key, value)
 
         self.id = str(id or uuid.uuid4())
-        self.created_at = created_at or datetime.now()
-        self.updated_at = updated_at or datetime.now()
+        self.created_at = created_at or datetime.now(timezone.utc)
+        self.updated_at = updated_at or datetime.now(timezone.utc)
 
     @classmethod
     def get(cls, id) -> "Any | None":

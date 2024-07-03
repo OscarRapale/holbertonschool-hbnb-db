@@ -32,7 +32,6 @@ class Place(db.Model):
 
 
     def __init__(self, data: dict | None = None, **kw) -> None:
-        """Dummy init"""
         super().__init__(**kw)
 
         if not data:
@@ -51,7 +50,6 @@ class Place(db.Model):
         self.max_guests = int(data.get("max_guests", 0))
 
     def __repr__(self) -> str:
-        """Dummy repr"""
         return f"<Place {self.id} ({self.name})>"
 
     def to_dict(self) -> dict:

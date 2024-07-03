@@ -15,13 +15,11 @@ class Amenity(db.Model):
     places = db.relationship('PlaceAmenity', back_populates='amenity')
     
     def __init__(self, name: str, **kw) -> None:
-        """Dummy init"""
         super().__init__(**kw)
 
         self.name = name
 
     def __repr__(self) -> str:
-        """Dummy repr"""
         return f"<Amenity {self.id} ({self.name})>"
 
     def to_dict(self) -> dict:
@@ -76,14 +74,12 @@ class PlaceAmenity(db.Model):
     amenity = db.relationship('Amenity', back_populates='places')
 
     def __init__(self, place_id: str, amenity_id: str, **kw) -> None:
-        """Dummy init"""
         super().__init__(**kw)
 
         self.place_id = place_id
         self.amenity_id = amenity_id
 
     def __repr__(self) -> str:
-        """Dummy repr"""
         return f"<PlaceAmenity ({self.place_id} - {self.amenity_id})>"
 
     def to_dict(self) -> dict:

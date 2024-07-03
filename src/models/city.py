@@ -18,16 +18,13 @@ class City(db.Model):
     country = db.relationship('Country', back_populates='cities')
 
 
-
     def __init__(self, name: str, country_code: str, **kw) -> None:
-        """Dummy init"""
         super().__init__(**kw)
 
         self.name = name
         self.country_code = country_code
 
     def __repr__(self) -> str:
-        """Dummy repr"""
         return f"<City {self.id} ({self.name})>"
 
     def to_dict(self) -> dict:

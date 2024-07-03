@@ -68,6 +68,7 @@ def register_routes(app: Flask) -> None:
     from src.routes.reviews import reviews_bp
     from src.routes.auth import auth_bp
     from src.routes.admin import admin_bp
+    from src.routes.home import home_bp
 
     # Register the blueprints in the app
     app.register_blueprint(users_bp)
@@ -78,6 +79,7 @@ def register_routes(app: Flask) -> None:
     app.register_blueprint(amenities_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(home_bp)
 
 def register_handlers(app: Flask) -> None:
     """Register the error handlers for the Flask app."""

@@ -21,7 +21,6 @@ class User(db.Model):
 
 
     def __init__(self, email: str, password: str, first_name: str, last_name: str, is_admin: bool, **kw):
-        """Dummy init"""
         super().__init__(**kw)
         self.email = email
         self.password_hash = generate_password_hash(password)
@@ -30,7 +29,6 @@ class User(db.Model):
         self.is_admin = is_admin
 
     def __repr__(self) -> str:
-        """Dummy repr"""
         return f"<User {self.id} ({self.email})>"
 
     def set_password(self, password):
@@ -79,6 +77,8 @@ class User(db.Model):
 
         if "email" in data:
             user.email = data["email"]
+        if "password" in data:
+            user.set_password(data["password"])
         if "first_name" in data:
             user.first_name = data["first_name"]
         if "last_name" in data:

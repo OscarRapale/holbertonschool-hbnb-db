@@ -28,7 +28,6 @@ class Review(db.Model):
     def __init__(
         self, place_id: str, user_id: str, comment: str, rating: float, **kw
     ) -> None:
-        """Dummy init"""
         super().__init__(**kw)
 
         self.place_id = place_id

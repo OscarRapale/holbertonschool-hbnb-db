@@ -2,7 +2,7 @@
 Places controller module
 """
 
-from flask import abort, request
+from flask import abort, request, jsonify
 from src.models import db
 from src.models.place import Place
 from src.models.user import User
@@ -83,3 +83,41 @@ def delete_place(place_id: str):
         abort(404, f"Place with ID {place_id} not found")
 
     return "", 204
+
+@jwt_required()
+def add_amenity_to_place(place_id: str):
+    """Adds an amenity to a place"""
+    from src.models.amenity import Amenity, PlaceAmenity
+
+    data = request.get_json()
+    amenity_id = data.get('amenity_id')
+
+    place = Place.get(place_id)
+    if not place:
+        abort(404, f"Place with ID {place_id} not found")
+
+    amenity = Amenity.get(amenity_id)
+    if not amenity:
+        abort(404, f"Amenity with ID {amenity_id} not found")
+
+    place_amenity = PlaceAmenity.get(place_id, amenity_id)
+    if place_amenity:
+        abort(400, f"Amenity with ID {amenity_id} is already associated with place with ID {place_id}")
+
+    new_place_amenity = PlaceAmenity.create({"place_id": place_id, "amenity_id": amenity_id})
+
+    return new_place_amenity.to_dict(), 200
+
+@jwt_required()
+def get_amenities_of_place(place_id: str):
+    """Gets all amenities of a place"""
+    from src.models.amenity import Amenity, PlaceAmenity
+
+    place = Place.get(place_id)
+    if not place:
+        abort(404, f"Place with ID {place_id} not found")
+
+    place_amenities = PlaceAmenity.query.filter_by(place_id=place_id).all()
+    amenities = [Amenity.get(pa.amenity_id) for pa in place_amenities]
+
+    return jsonify([amenity.to_dict() for amenity in amenities]), 200

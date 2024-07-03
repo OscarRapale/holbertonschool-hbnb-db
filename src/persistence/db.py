@@ -1,11 +1,11 @@
 from src.models.base import Base
 from src.models import db
+from src.models.country import Country
 from src.persistence.repository import Repository
 from sqlalchemy.exc import SQLAlchemyError
 
 
 class DBRepository(Repository):
-    """Dummy DB repository"""
 
     def __init__(self) -> None:
         self.__session = db.session
@@ -24,6 +24,14 @@ class DBRepository(Repository):
         except SQLAlchemyError:
             self.__session.rollback()
             return None
+
+    def get_for_country(self, code: str) -> Base | None:
+        try:
+            return self.__session.query(Country).filter_by(code=code).first()
+        except SQLAlchemyError:
+            self.__session.rollback()
+            return None
+        
 
     def reload(self) -> None:
         self.__session = db.session
