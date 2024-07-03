@@ -1,0 +1,1 @@
+admin_bp.route('/admin/data', methods=['POST', 'DELETE'])

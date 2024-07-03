@@ -6,7 +6,7 @@ from flask import abort, request
 from src.models.user import User
 from sqlalchemy.exc import SQLAlchemyError
 from src.persistence import repo
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 
 def get_users():
     """Returns all users"""
@@ -58,6 +58,13 @@ def get_user_by_id(user_id: str):
 @jwt_required()
 def update_user(user_id: str):
     """Updates a user by ID"""
+    current_user_id = get_jwt_identity()
+    current_user = User.get(current_user_id)
+
+    # Check if the current user is admin or updating their own profile
+    if not current_user.is_admin and current_user.id != user_id:
+        abort(403, "You are not authorized to update this user.")
+
     data = request.get_json()
 
     try:
@@ -76,6 +83,13 @@ def update_user(user_id: str):
 @jwt_required()
 def delete_user(user_id: str):
     """Deletes a user by ID"""
+    current_user_id = get_jwt_identity()
+    current_user = User.get(current_user_id)
+
+    # Check if the current user is admin
+    if not current_user.is_admin:
+        abort(403, "You are not authorized to delete users.")
+
     try:
         if not User.delete(user_id):
             abort(404, f"User with ID {user_id} not found")
@@ -83,3 +97,26 @@ def delete_user(user_id: str):
         abort(500, f"Database error: {e}")
 
     return "", 204
+
+# Admin endpoint to manage users
+@jwt_required()
+def promote_user_to_admin(user_id: str):
+    """Promotes a user to admin status"""
+    current_user_id = get_jwt_identity()
+    current_user = User.get(current_user_id)
+
+    # Check if the current user is admin
+    if not current_user.is_admin:
+        abort(403, "You are not authorized to promote users.")
+
+    try:
+        user = User.get(user_id)
+        if not user:
+            abort(404, f"User with ID {user_id} not found")
+        
+        user.is_admin = True
+        repo.update(user)
+    except SQLAlchemyError as e:
+        abort(500, f"Database error: {e}")
+
+    return user.to_dict(), 200

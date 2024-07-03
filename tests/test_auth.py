@@ -15,7 +15,7 @@ def client():
 
     with app.app_context():
         db.create_all()
-        user = User(email="tester@example.com", password="password", first_name="Tester", last_name="User", is_admin=False)
+        user = User(email="joe@example.com", password="password", first_name="Joe", last_name="Admin", is_admin=True)
         user.set_password("password")
         db.session.add(user)
         db.session.commit()
@@ -26,7 +26,14 @@ def client():
         db.drop_all()
 
 def test_login(client):
-    response = client.post('/login', json={"email": "tester@example.com", "password": "password"})
+    response = client.post('/login', json={"email": "joe@example.com", "password": "password"})
     data = json.loads(response.data)
     assert response.status_code == 200
     assert "access_token" in data
+
+def test_admin_access(client):
+    response = client.post('/login', json={"email": "joe@example.com", "password": "password"})
+    access_token = json.loads(response.data)["access_token"]
+
+    response = client.post('/admin/data', headers={"Authorization": f"Bearer {access_token}"})
+    assert response.status_code == 200

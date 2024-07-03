@@ -2,19 +2,24 @@
 Cities controller module
 """
 
-from flask import request, abort
+from flask import request, abort, jsonify
 from src.models.city import City
+from flask_jwt_extended import jwt_required, get_jwt
 
-
+@jwt_required()
 def get_cities():
     """Returns all cities"""
     cities: list[City] = City.get_all()
 
     return [city.to_dict() for city in cities]
 
-
+@jwt_required()
 def create_city():
     """Creates a new city"""
+    claims = get_jwt()
+    if not claims.get('is_admin'):
+        return jsonify({"msg": "Administration rights required"}), 403
+    
     data = request.get_json()
 
     try:
@@ -26,7 +31,7 @@ def create_city():
 
     return city.to_dict(), 201
 
-
+@jwt_required()
 def get_city_by_id(city_id: str):
     """Returns a city by ID"""
     city: City | None = City.get(city_id)
@@ -36,9 +41,13 @@ def get_city_by_id(city_id: str):
 
     return city.to_dict()
 
-
+@jwt_required()
 def update_city(city_id: str):
     """Updates a city by ID"""
+    claims = get_jwt()
+    if not claims.get('is_admin'):
+        return jsonify({"msg": "Administration rights required"}), 403
+    
     data = request.get_json()
 
     try:
@@ -51,9 +60,13 @@ def update_city(city_id: str):
 
     return city.to_dict()
 
-
+@jwt_required()
 def delete_city(city_id: str):
     """Deletes a city by ID"""
+    claims = get_jwt()
+    if not claims.get('is_admin'):
+        return jsonify({"msg": "Administration rights required"}), 403
+    
     if not City.delete(city_id):
         abort(404, f"City with ID {city_id} not found")
 

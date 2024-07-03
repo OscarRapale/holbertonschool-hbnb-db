@@ -29,11 +29,32 @@ def seed_db():
     from src.models.city import City
     from src.models.place import Place
     from src.models.amenity import Amenity
+    from src.models.amenity import PlaceAmenity
     from src.models.review import Review
 
-    db.session.add(User(email="admin@example.com", first_name="Admin", last_name="User"))
-    db.session.add(Country(name="United States", code="US"))
-    # Add more initial data here...
+    user = User(email="joe@example.com", password="password", first_name="Joe", last_name="User", is_admin=False)
+    db.session.add(user)
+
+    db.session.add(Country(name="Japan", code="JP"))
+
+    city = City(name="New York", country_code="US")
+    db.session.add(city)
+
+    place = Place(name="Central Park", description="A large city park in New York.", address="123 Main street", latitude=40.7826, longitude=73.9656, host_id=user.id, city_id=city.id,
+                 price_per_night=150.0,  number_of_bathrooms=1, number_of_rooms=2,  max_guests=3)
+    db.session.add(place)
+
+    amenity1 = Amenity(name="Wi-Fi")
+    amenity2 = Amenity(name="Parking")
+    db.session.add(amenity1)
+    db.session.add(amenity2)
+
+    place_amenity1 = PlaceAmenity(place_id=place.id, amenity_id=amenity1.id)
+    db.session.add(place_amenity1)
+
+    place_amenity2 = PlaceAmenity(place_id=place.id, amenity_id=amenity2.id)
+    db.session.add(place_amenity2)
+
     db.session.commit()
     print("Database seeded.")
 

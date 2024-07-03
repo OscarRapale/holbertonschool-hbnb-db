@@ -2,9 +2,6 @@ from src.models.base import Base
 from src.models import db
 from src.persistence.repository import Repository
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import create_engine, Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
 
 
 class DBRepository(Repository):
@@ -36,8 +33,9 @@ class DBRepository(Repository):
         try:
             self.__session.add(obj)
             self.__session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
             self.__session.rollback()
+            print(f"Error saving object: {SQLAlchemyError}")
 
     def update(self, obj: Base) -> None:
         try:

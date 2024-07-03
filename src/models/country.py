@@ -57,7 +57,7 @@ class Country(db.Model):
     def create(name: str, code: str) -> "Country":
         """Create a new country"""
         from src.persistence import repo
-
+        
         country = Country(name, code)
 
         repo.save(country)
