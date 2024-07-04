@@ -42,7 +42,7 @@ def get_place_by_id(place_id: str):
 
     return place.to_dict(), 200
 
-
+@jwt_required()
 def update_place(place_id: str):
     """Updates a place by ID"""
     data = request.get_json()
@@ -78,6 +78,10 @@ def delete_place(place_id: str):
     # Check if the current user is admin or the owner of the place
     if not current_user.is_admin and place.host_id != current_user_id:
         abort(403, "You are not authorized to delete this place.")
+
+    # Delete all PlaceAmenity instances that reference the Place
+    for amenity in place.amenities:
+        db.session.delete(amenity)
 
     if not Place.delete(place_id):
         abort(404, f"Place with ID {place_id} not found")

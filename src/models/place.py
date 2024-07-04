@@ -88,7 +88,8 @@ class Place(db.Model):
 
         new_place = Place(data=data)
 
-        repo.save(new_place)
+        db.session.add(new_place)
+        db.session.commit()
 
         return new_place
 
